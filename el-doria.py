@@ -8,10 +8,8 @@ largura = 800
 altura = 600
 tela = pygame.display.set_mode((largura, altura))
 pygame.display.set_caption("El-Doria")
-fonte = pygame.font.Sysfont(None, 60)
-texto = fonte.render("titulo", True, (255, 255, 255))
-titulo = "El-Doria"
-meio_da_tela = (150, 250)
+fonte = pygame.font.SysFont(None, 60)
+texto = fonte.render("El-Doria", True, (255, 255, 255))
 preto = (0, 0, 0)
 
 rodando = True
@@ -25,6 +23,6 @@ while rodando:
     
 
     tela.fill((preto))
-    tela.blit(texto (meio_da_tela))
+    tela.blit(texto, (326, 260))
     pygame.display.update()
 pygame.quit()
