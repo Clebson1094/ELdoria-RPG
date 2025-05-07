@@ -22,8 +22,8 @@ velocidade = 4
 
 pulo = False
 forca_pulo = 25
-gravidade = 1
-vel_y = 5
+gravidade = 2
+vel_y = 1
 
 #CONTROLES
 def controles(teclas):
@@ -57,13 +57,7 @@ while rodando:
     teclas = pygame.key.get_pressed()
     controles(teclas)
 
-    if pulo:
-        y += vel_y
-        vel_y += gravidade
-        if y >= 300:
-            y = 300
-            vel_y = 0
-            pulo = False
+   
 
     tela.fill((preto))
     
