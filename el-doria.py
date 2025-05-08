@@ -45,7 +45,7 @@ jump_frames_esquerda = [pygame.transform.flip(f, True, False) for f in jump_fram
 
 pulo = False
 velocidade_y = 0
-forca_pulo = 15
+forca_pulo = 10
 gravidade = 1
 y_chao = 300
 indice_pulo = 0
@@ -70,7 +70,7 @@ walk_frames_esquerda = [pygame.transform.flip(f, True, False) for f in walk_fram
 
 x = 300
 y = 300
-velocidade = 4
+velocidade = 5
 direcao = "idle"
 
 #SPRITES_IDLE
@@ -87,7 +87,7 @@ for i in range(quantidade_frames):
     idle_frames.append(frame)
 
 indice_frame = 0
-tempo_animacao = 180
+tempo_animacao = 150
 ultimo_update = pygame.time.get_ticks()
 
 
