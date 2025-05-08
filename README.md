@@ -1,2 +1,4 @@
 # ELdoria-RPG
-Projeto de RPG em Python com Pygame
+
+INICIANTE NA PROGRAMAÇÃO
+APRENDENDO A PROGRAMAR EM PYTHON
