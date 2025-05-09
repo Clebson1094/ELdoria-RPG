@@ -11,15 +11,15 @@ fonte = pygame.font.SysFont(None, 60)
 preto = (0, 0, 0)
 clock = pygame.time.Clock()
 
-
+# CLASSE PRINCIPAL
 class Personagem:
     def __init__(self):
         self.x = 300
-        self.y = 660
+        self.y = 662
         self.velocidade = 5
         self.direcao = "idle"
         self.direcao_pulo = "direita"
-        self.y_chao = 660
+        self.y_chao = 662
 
         self.atk = False
         self.combo_etapa = 0
@@ -104,8 +104,14 @@ class Personagem:
             else:
                 self.direcao = "idle"
 
+        # Limita personagem na tela
+        if self.x < 0:
+            self.x = 0
+        if self.x > LARGURA - 100:
+            self.x = LARGURA - 100
+
         if agora - self.ultimo_update > self.tempo_animacao:
-            self.indice_frame = (self.indice_frame + 1) % 7 
+            self.indice_frame = (self.indice_frame + 1) % 7
             self.ultimo_update = agora
 
     def desenhar(self, tela):
@@ -133,23 +139,27 @@ class Personagem:
         self.ultimo_atk_update = agora
         self.ultimo_ataque_combo = agora
 
+
 # CENÁRIO
 def carregar_layers():
     layers = []
-    layer_nomes = [
+    nomes = [
         "Layer_0011_0.png", "Layer_0010_1.png", "Layer_0009_2.png", "Layer_0008_3.png",
         "Layer_0007_Lights.png", "Layer_0006_4.png", "Layer_0005_5.png", "Layer_0004_Lights.png",
         "Layer_0003_6.png", "Layer_0002_7.png", "Layer_0001_8.png", "Layer_0000_9.png"
     ]
-    for nome in layer_nomes:
+    for nome in nomes:
         caminho = os.path.join("cenario", nome)
-        layer = pygame.image.load(caminho).convert_alpha()
-        layers.append(layer)
+        imagem = pygame.image.load(caminho).convert_alpha()
+        layers.append(imagem)
     return layers
 
-#GAME
+
+# GAME SETUP
 personagem = Personagem()
 layers = carregar_layers()
+largura_cenario = layers[0].get_width()
+deslocamento_cenario = 0
 rodando = True
 
 while rodando:
@@ -164,11 +174,17 @@ while rodando:
     teclas = pygame.key.get_pressed()
     personagem.atualizar(teclas)
 
+    # Scroll de fundo com limites
+    if teclas[pygame.K_RIGHT] and deslocamento_cenario > -(largura_cenario - LARGURA):
+        deslocamento_cenario -= 2
+    elif teclas[pygame.K_LEFT] and deslocamento_cenario < 0:
+        deslocamento_cenario += 2
+
     tela.fill(preto)
 
-    # Desenhando as camadas de fundo
-    for i, layer in enumerate(layers):
-        tela.blit(layer, (0, 0))  # Você pode adicionar lógica para mover as camadas em parallax
+    # Desenhar camadas do cenário com deslocamento
+    for layer in layers:
+        tela.blit(layer, (deslocamento_cenario, 0))
 
     personagem.desenhar(tela)
     pygame.display.update()
