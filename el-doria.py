@@ -13,8 +13,31 @@ texto = fonte.render("", True, (255, 255, 255))
 preto = (0, 0, 0)
 
 #SPRITESHEET_ATACK
-caminho_atk = os.path.join("champ", "Attack_KG_4.png")
-spritesheet_atk = pygame.image.load(caminho_atk).convert_alpha()
+combo_frames = []
+
+combo_spritesheets = [
+    "Attack_KG_1.png",
+    "Attack_KG_2.png",
+    "Attack_KG_4.png",
+    "Attack_KG_3.png"
+]
+
+frames_por_combo = [6, 6, 5, 9]
+
+largura_atk = 100
+altura_atk = 64
+
+for i, arquivo in enumerate(combo_spritesheets):
+    caminho = os.path.join("champ", arquivo)
+    spritesheet = pygame.image.load(caminho).convert_alpha()
+    frames = []
+    for j in range(frames_por_combo[i]):
+        frame = spritesheet.subsurface((j * largura_atk, 0,largura_atk, altura_atk))
+        frames.append(frame)
+    combo_frames.append(frames)
+
+combo_frames_esquerda = [[pygame.transform.flip(f, True, False) for f in frames] for frames in combo_frames]
+
 largura_atk = 100
 altura_atk = 64
 quantidade_atk_frames = 5
@@ -22,12 +45,9 @@ indice_atk = 0
 tempo_atk = 60
 ultimo_atk_update = pygame.time.get_ticks()
 atk = False
-atk_frames = []
-for i in range(quantidade_atk_frames):
-    frame = spritesheet_atk.subsurface((i * largura_atk, 0, largura_atk, altura_atk))
-    atk_frames.append(frame)
-
-atk_frames_esquerda = [pygame.transform.flip(f, True, False) for f in atk_frames]
+combo_etapa = 0
+tempo_combo_max = 800
+ultimo_ataque_combo = 0
 
 #SPRITESHEET_PULO
 caminho_pulo = os.path.join("champ", "Jump_KG_2.gif")
@@ -96,11 +116,18 @@ while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
-        if evento.type == pygame.KEYDOWN:
+
+        if evento.type == pygame.KEYDOWN: 
             if evento.key == pygame.K_SPACE and not atk:
+                agora = pygame.time.get_ticks()
+                if agora - ultimo_ataque_combo <= tempo_combo_max:
+                    combo_etapa = (combo_etapa + 1) % 4
+                else:
+                    combo_etapa = 0
                 atk = True
                 indice_atk = 0
-                ultimo_atk_update = pygame.time.get_ticks()
+                ultimo_atk_update = agora
+                ultimo_ataque_combo = agora
     clock.tick(60)
 
     teclas = pygame.key.get_pressed()
@@ -108,10 +135,12 @@ while rodando:
     if atk:
         agora_atk = pygame.time.get_ticks()
         if agora_atk - ultimo_atk_update > tempo_atk:
-                indice_atk = (indice_atk + 1) % quantidade_atk_frames
+                indice_atk  += 1
                 ultimo_atk_update = agora_atk
-                if indice_atk == 0:
+                
+                if indice_atk >= len(combo_frames[combo_etapa]):
                     atk = False
+                    indice_atk = 0
 
     if not pulo:
         if teclas[pygame.K_UP]:
@@ -153,9 +182,9 @@ while rodando:
     
     if atk:
         if direcao == "esquerda":
-            tela.blit(atk_frames_esquerda[indice_atk], (x, y))
+            tela.blit(combo_frames_esquerda[combo_etapa][indice_atk], (x, y))
         else:
-            tela.blit(atk_frames[indice_atk], (x, y))
+            tela.blit(combo_frames[combo_etapa][indice_atk], (x, y))
     elif pulo:
         if direcao_pulo == "esquerda":
             tela.blit(jump_frames_esquerda[indice_pulo], (x, y))
