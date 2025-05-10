@@ -7,7 +7,7 @@ pygame.init()
 LARGURA, ALTURA = 928, 793
 tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("El-Doria")
-fonte = pygame.font.SysFont(None, 60)
+fonte = pygame.font.SysFont(None, 37)
 preto = (0, 0, 0)
 clock = pygame.time.Clock()
 
@@ -77,7 +77,7 @@ class Personagem:
                     self.indice_atk = 0
 
         if not self.pulo:
-            if teclas[pygame.K_UP]:
+            if teclas[pygame.K_w]:
                 self.pulo = True
                 self.velocidade_y = -self.forca_pulo
                 self.indice_pulo = 0
@@ -95,16 +95,15 @@ class Personagem:
                 self.pulo = False
 
         if not self.atk:
-            if teclas[pygame.K_LEFT]:
+            if teclas[pygame.K_a]:
                 self.x -= self.velocidade
                 self.direcao = "esquerda"
-            elif teclas[pygame.K_RIGHT]:
+            elif teclas[pygame.K_d]:
                 self.x += self.velocidade
                 self.direcao = "direita"
             else:
                 self.direcao = "idle"
 
-        # Limita personagem na tela
         if self.x < 0:
             self.x = 0
         if self.x > LARGURA - 100:
@@ -155,11 +154,25 @@ def carregar_layers():
     return layers
 
 
+# HUD DE VIDA
+def desenhar_hud(tela, vida_atual, vida_maxima):
+    x, y = 20, 20
+    largura_barra = 200
+    altura_barra = 25
+    pygame.draw.rect(tela, (255, 255, 255), (x, y, largura_barra, altura_barra), 2)  # Borda
+    largura_vida = int((vida_atual / vida_maxima) * largura_barra)
+    pygame.draw.rect(tela, (255, 0, 0), (x, y, largura_vida, altura_barra))  # Vida
+    texto_vida = fonte.render(f"{vida_atual}/{vida_maxima}", True, (255, 255, 255))
+    tela.blit(texto_vida, (x + largura_barra + 10, y + 2))
+
+
 # GAME SETUP
 personagem = Personagem()
 layers = carregar_layers()
 largura_cenario = layers[0].get_width()
 deslocamento_cenario = 0
+vida_atual = 100
+vida_maxima = 100
 rodando = True
 
 while rodando:
@@ -175,9 +188,9 @@ while rodando:
     personagem.atualizar(teclas)
 
     # Scroll de fundo com limites
-    if teclas[pygame.K_RIGHT] and deslocamento_cenario > -(largura_cenario - LARGURA):
+    if teclas[pygame.K_d] and deslocamento_cenario > -(largura_cenario - LARGURA):
         deslocamento_cenario -= 2
-    elif teclas[pygame.K_LEFT] and deslocamento_cenario < 0:
+    elif teclas[pygame.K_a] and deslocamento_cenario < 0:
         deslocamento_cenario += 2
 
     tela.fill(preto)
@@ -187,6 +200,10 @@ while rodando:
         tela.blit(layer, (deslocamento_cenario, 0))
 
     personagem.desenhar(tela)
+
+    # Desenhar HUD
+    desenhar_hud(tela, vida_atual, vida_maxima)
+
     pygame.display.update()
 
 pygame.quit()
