@@ -16,10 +16,11 @@ class Personagem:
     def __init__(self):
         self.x = 300
         self.y = 662
-        self.velocidade = 5
+        self.velocidade = 3
         self.direcao = "idle"
         self.direcao_pulo = "direita"
         self.y_chao = 662
+        self.direcao_face = "direita"
 
         self.atk = False
         self.combo_etapa = 0
@@ -32,23 +33,34 @@ class Personagem:
         self.ultimo_ataque_combo = 0
 
         self.pulo = False
-        self.velocidade_y = 0
-        self.forca_pulo = 10
-        self.gravidade = 1
+        self.velocidade_y = 100
+        self.forca_pulo = 7
+        self.gravidade = 0.5
         self.jump_frames = self.carregar_frames("Jump_KG_2.gif", 6)
         self.jump_frames_esquerda = [pygame.transform.flip(f, True, False) for f in self.jump_frames]
         self.indice_pulo = 0
-        self.tempo_pulo = 100
+        self.tempo_pulo = 1000
         self.ultimo_pulo_update = pygame.time.get_ticks()
 
+        self.dash = False
+        self.dash_frames = self.carregar_frames("Dashing_KG_1.png", 4)
+        self.dash_frames_esquerda = [pygame.transform.flip(f, True, False) for f in self.dash_frames]
+        self.indice_dash = 0
+        self.tempo_dash = 10
+        self.ultimo_dash_update = pygame.time.get_ticks()
+        self.tempo_dash_total = 4 * self.tempo_dash
+        self.dash_cooldown = 3000
+        self.ultimo_dash = -self.dash_cooldown
+        self.distancia_dash = 200
+        self.velocidade_dash = 25
         self.walk_frames_direita = self.carregar_frames("Walking_KG_2.png", 7)
         self.walk_frames_esquerda = [pygame.transform.flip(f, True, False) for f in self.walk_frames_direita]
 
         self.idle_frames = self.carregar_frames("Idle_KG_2.png", 4)
         self.indice_frame = 0
-        self.tempo_animacao = 150
+        self.tempo_animacao = 100
         self.ultimo_update = pygame.time.get_ticks()
-
+        self.idle_frames_esquerda = [pygame.transform.flip(f, True, False) for f in self.idle_frames]
     def carregar_combo(self):
         combo = []
         spritesheets = ["Attack_KG_1.png", "Attack_KG_2.png", "Attack_KG_4.png", "Attack_KG_3.png"]
@@ -94,13 +106,37 @@ class Personagem:
                 self.y = self.y_chao
                 self.pulo = False
 
-        if not self.atk:
+        agora = pygame.time.get_ticks()
+        if not self.dash and teclas[pygame.K_LSHIFT] and agora - self.ultimo_dash >= self.dash_cooldown:
+
+            self.dash = True
+            self.indice_dash = 0
+            self.ultimo_dash_update = agora
+            self.ultimo_dash = agora
+        
+        if self.dash:
+            if agora - self.ultimo_dash_update > self.tempo_dash:
+                self.indice_dash += 1
+                self.ultimo_dash_update = agora
+
+                if self.direcao == "direita":
+                    self.x += self.velocidade_dash
+                else:
+                    self.x -= self.velocidade_dash
+
+                if self.indice_dash >= len(self.dash_frames):
+                    self.dash = False
+                    self.indice_dash = 0
+
+        if not self.atk and not self.dash:
             if teclas[pygame.K_a]:
                 self.x -= self.velocidade
                 self.direcao = "esquerda"
+                self.direcao_face = "esquerda"
             elif teclas[pygame.K_d]:
                 self.x += self.velocidade
                 self.direcao = "direita"
+                self.direcao_face = "direita"
             else:
                 self.direcao = "idle"
 
@@ -114,6 +150,9 @@ class Personagem:
             self.ultimo_update = agora
 
     def desenhar(self, tela):
+        if self.dash:
+            frame = self.dash_frames_esquerda[self.indice_dash] if self.direcao == "esquerda" else self.dash_frames[self.indice_dash]
+            tela.blit(frame, (self.x, self.y))
         if self.atk:
             frames = self.combo_frames_esquerda if self.direcao == "esquerda" else self.combo_frames
             tela.blit(frames[self.combo_etapa][self.indice_atk], (self.x, self.y))
@@ -121,7 +160,11 @@ class Personagem:
             frame = self.jump_frames_esquerda[self.indice_pulo] if self.direcao_pulo == "esquerda" else self.jump_frames[self.indice_pulo]
             tela.blit(frame, (self.x, self.y))
         elif self.direcao == "idle":
-            tela.blit(self.idle_frames[self.indice_frame % len(self.idle_frames)], (self.x, self.y))
+            if self.direcao_face == "esquerda":
+                frame = self.idle_frames_esquerda[self.indice_frame % len(self.idle_frames_esquerda)]
+            else:
+                frame = self.idle_frames[self.indice_frame % len(self.idle_frames)]
+            tela.blit(frame, (self.x, self.y))
         elif self.direcao == "direita":
             tela.blit(self.walk_frames_direita[self.indice_frame % len(self.walk_frames_direita)], (self.x, self.y))
         elif self.direcao == "esquerda":
@@ -183,7 +226,7 @@ while rodando:
             if evento.key == pygame.K_SPACE and not personagem.atk:
                 personagem.atacar()
 
-    clock.tick(60)
+    clock.tick(120)
     teclas = pygame.key.get_pressed()
     personagem.atualizar(teclas)
 
