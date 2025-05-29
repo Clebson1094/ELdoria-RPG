@@ -139,14 +139,14 @@ class Personagem:
             else:
                 self.direcao = "idle"
 
+        if agora - self.ultimo_update > self.tempo_animacao:
+            self.indice_frame = (self.indice_frame + 1) % 7
+            self.ultimo_update = agora
+
         if self.x < 0:
             self.x = 0
         if self.x > LARGURA - 100:
             self.x = LARGURA - 100
-
-        if agora - self.ultimo_update > self.tempo_animacao:
-            self.indice_frame = (self.indice_frame + 1) % 7
-            self.ultimo_update = agora
 
     def desenhar(self, tela):
         if self.roll:
